@@ -20,15 +20,15 @@ package org.apache.spark.sql
 import java.util.Properties
 
 import scala.collection.JavaConverters._
-
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.internal.Logging
 import org.apache.spark.Partition
 import org.apache.spark.annotation.InterfaceStability
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.json.{JacksonParser, JSONOptions}
+import org.apache.spark.sql.catalyst.json.{JSONOptions, JacksonParser}
 import org.apache.spark.sql.execution.LogicalRDD
 import org.apache.spark.sql.execution.datasources.DataSource
+import org.apache.spark.sql.execution.datasources.cds.{CDSPartitioningInfo, CDSRelation, CdsUtils}
 import org.apache.spark.sql.execution.datasources.jdbc._
 import org.apache.spark.sql.execution.datasources.json.InferSchema
 import org.apache.spark.sql.types.StructType
@@ -236,6 +236,45 @@ class DataFrameReader private[sql](sparkSession: SparkSession) extends Logging {
       JDBCPartition(part, i) : Partition
     }
     val relation = JDBCRelation(parts, options)(sparkSession)
+    sparkSession.baseRelationToDataFrame(relation)
+  }
+
+
+  def cds(url: String, table: String, properties: Properties): DataFrame = {
+    cds(url, table, null, 0, 0, 0, properties)
+  }
+
+  def cds(
+           url: String,
+           table: String,
+           columnName: String,
+           lowerBound: Long,
+           upperBound: Long,
+           numPartitions: Int,
+           connectionProperties: Properties): DataFrame = {
+    // columnName, lowerBound, upperBound and numPartitions override settings in extraOptions.
+    this.extraOptions ++= Map(
+      JDBCOptions.JDBC_PARTITION_COLUMN -> columnName,
+      JDBCOptions.JDBC_LOWER_BOUND -> lowerBound.toString,
+      JDBCOptions.JDBC_UPPER_BOUND -> upperBound.toString,
+      JDBCOptions.JDBC_NUM_PARTITIONS -> numPartitions.toString)
+
+    val partitioning = CDSPartitioningInfo(columnName, lowerBound, upperBound, numPartitions,
+      CdsUtils.getTableLocations(url, table))
+    val parts = CDSRelation.columnPartition(partitioning)
+
+    cds(url, table, parts, connectionProperties)
+  }
+
+  private def cds(
+                   url: String,
+                   table: String,
+                   parts: Array[Partition],
+                   connectionProperties: Properties): DataFrame = {
+    // connectionProperties should override settings in extraOptions.
+    val params = extraOptions.toMap ++ connectionProperties.asScala.toMap
+    val options = new JDBCOptions(url, table, params)
+    val relation = CDSRelation(parts, options)(sparkSession)
     sparkSession.baseRelationToDataFrame(relation)
   }
 
