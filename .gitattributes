@@ -1,4 +1,5 @@
 * text=lf
+*.* text=lf
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.win text eof=crlf
