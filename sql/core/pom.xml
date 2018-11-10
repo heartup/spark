@@ -109,14 +109,10 @@
       <version>5.1.38</version>
     </dependency>
     <dependency>
-      <groupId>com.jd.jr</groupId>
-      <artifactId>jdcds-driver</artifactId>
-      <version>3.4.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.wangyin</groupId>
-      <artifactId>wangyin-commons</artifactId>
-      <version>1.0.6</version>
+      <groupId>io.shardingsphere</groupId>
+      <artifactId>sharding-jdbc-core</artifactId>
+      <version>3.0.0.M5-SNAPSHOT</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
