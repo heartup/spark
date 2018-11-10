@@ -193,7 +193,7 @@ object EPSRDD extends Logging {
   }
 }
 
-private[eps] class EPSRDD(
+private[sql] class EPSRDD(
                              sc: SparkContext,
                              getConnection: () => Connection,
                              schema: StructType,

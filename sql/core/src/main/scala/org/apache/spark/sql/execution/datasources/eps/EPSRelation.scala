@@ -40,20 +40,6 @@ private[sql] case class EPSPartitioningInfo(
                                               tableLocations: Array[EPSTableLocation])
 
 private[sql] object EPSRelation extends Logging {
-  /**
-    * Given a partitioning schematic (a column of integral type, a number of
-    * partitions, and upper and lower bounds on the column's value), generate
-    * WHERE clauses for each partition so that each row in the table appears
-    * exactly once.  The parameters minValue and maxValue are advisory in that
-    * incorrect values may cause the partitioning to be poor, but no data
-    * will fail to be represented.
-    *
-    * Null value predicate is added to the first partition where clause to include
-    * the rows with null value for the partitions column.
-    *
-    * @param partitioning partition information to generate the where clause for each partition
-    * @return an array of partitions with where clause for each partition
-    */
   def columnPartition(partitioning: EPSPartitioningInfo): Array[Partition] = {
     if (partitioning.column == null) {
       var i: Int = 0
