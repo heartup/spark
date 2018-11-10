@@ -23,7 +23,8 @@ import org.apache.spark.Partition
 import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SaveMode, SparkSession, SQLContext}
-import org.apache.spark.sql.execution.datasources.jdbc.{CDSPartition, CDSRDD, JDBCOptions}
+import org.apache.spark.sql.execution.datasources.eps.{EPSPartition, EPSRDD}
+import org.apache.spark.sql.execution.datasources.jdbc.JDBCOptions
 import org.apache.spark.sql.jdbc.JdbcDialects
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType

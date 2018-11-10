@@ -19,20 +19,14 @@ package org.apache.spark.sql.execution.datasources.eps
 
 import java.util.{Properties, Set}
 
-import org.apache.spark.internal.Logging
-import org.apache.spark.sql.execution.datasources.cds.CDSTableLocation
-
-import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
+
+import org.apache.spark.internal.Logging
+
 
 object EPSUtils extends Logging {
   def getTableLocations(url: String, tableName: String): Array[EPSTableLocation] = {
-    val properties: Properties = new Properties
-    val clusterBase: ClusterRuleBase = CdsHelper.initCluster(url, properties)
-    val splitTable: SplitTable = clusterBase.getSplittingTable(tableName)
-    val allLoca: Set[SplitKeyLocation] = splitTable.getRootSplittingKey.getAllLocations
-
-    var tableLocations = new ArrayBuffer[CDSTableLocation]()
+    var tableLocations = new ArrayBuffer[EPSTableLocation]()
     for (loc <- allLoca) {
       tableLocations += EPSTableLocation(loc.getTableSuffix,
         loc.getDbConnGroup.getGroupEntity.getGroupName)
