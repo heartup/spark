@@ -20,15 +20,16 @@ package org.apache.spark.sql
 import java.util.Properties
 
 import scala.collection.JavaConverters._
-import org.apache.spark.api.java.JavaRDD
-import org.apache.spark.internal.Logging
+
 import org.apache.spark.Partition
 import org.apache.spark.annotation.InterfaceStability
+import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.json.{JSONOptions, JacksonParser}
+import org.apache.spark.sql.catalyst.json.{JacksonParser, JSONOptions}
 import org.apache.spark.sql.execution.LogicalRDD
 import org.apache.spark.sql.execution.datasources.DataSource
-import org.apache.spark.sql.execution.datasources.cds.{CDSPartitioningInfo, CDSRelation, CdsUtils}
+import org.apache.spark.sql.execution.datasources.eps.{EPSPartitioningInfo, EPSRelation, EPSUtils}
 import org.apache.spark.sql.execution.datasources.jdbc._
 import org.apache.spark.sql.execution.datasources.json.InferSchema
 import org.apache.spark.sql.types.StructType
@@ -240,11 +241,11 @@ class DataFrameReader private[sql](sparkSession: SparkSession) extends Logging {
   }
 
 
-  def cds(url: String, table: String, properties: Properties): DataFrame = {
+  def eps(url: String, table: String, properties: Properties): DataFrame = {
     cds(url, table, null, 0, 0, 0, properties)
   }
 
-  def cds(
+  def eps(
            url: String,
            table: String,
            columnName: String,
@@ -259,14 +260,14 @@ class DataFrameReader private[sql](sparkSession: SparkSession) extends Logging {
       JDBCOptions.JDBC_UPPER_BOUND -> upperBound.toString,
       JDBCOptions.JDBC_NUM_PARTITIONS -> numPartitions.toString)
 
-    val partitioning = CDSPartitioningInfo(columnName, lowerBound, upperBound, numPartitions,
-      CdsUtils.getTableLocations(url, table))
-    val parts = CDSRelation.columnPartition(partitioning)
+    val partitioning = EPSPartitioningInfo(columnName, lowerBound, upperBound, numPartitions,
+      EPSUtils.getTableLocations(url, table))
+    val parts = EPSRelation.columnPartition(partitioning)
 
-    cds(url, table, parts, connectionProperties)
+    eps(url, table, parts, connectionProperties)
   }
 
-  private def cds(
+  private def eps(
                    url: String,
                    table: String,
                    parts: Array[Partition],
@@ -274,7 +275,7 @@ class DataFrameReader private[sql](sparkSession: SparkSession) extends Logging {
     // connectionProperties should override settings in extraOptions.
     val params = extraOptions.toMap ++ connectionProperties.asScala.toMap
     val options = new JDBCOptions(url, table, params)
-    val relation = CDSRelation(parts, options)(sparkSession)
+    val relation = EPSRelation(parts, options)(sparkSession)
     sparkSession.baseRelationToDataFrame(relation)
   }
 

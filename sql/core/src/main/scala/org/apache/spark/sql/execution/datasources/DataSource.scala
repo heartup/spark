@@ -23,15 +23,17 @@ import scala.collection.JavaConverters._
 import scala.language.{existentials, implicitConversions}
 import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
+
 import org.apache.hadoop.fs.Path
+
 import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.catalog.{BucketSpec, CatalogStorageFormat, CatalogTable}
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.sql.catalyst.util.CaseInsensitiveMap
-import org.apache.spark.sql.execution.datasources.cds.CdsRelationProvider
 import org.apache.spark.sql.execution.datasources.csv.CSVFileFormat
+import org.apache.spark.sql.execution.datasources.eps.EPSRelationProvider
 import org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider
 import org.apache.spark.sql.execution.datasources.json.JsonFileFormat
 import org.apache.spark.sql.execution.datasources.parquet.ParquetFileFormat
@@ -528,7 +530,7 @@ object DataSource {
   /** A map to maintain backward compatibility in case we move data sources around. */
   private val backwardCompatibilityMap: Map[String, String] = {
     val jdbc = classOf[JdbcRelationProvider].getCanonicalName
-    val cds = classOf[CdsRelationProvider].getCanonicalName
+    val eps = classOf[EPSRelationProvider].getCanonicalName
     val json = classOf[JsonFileFormat].getCanonicalName
     val parquet = classOf[ParquetFileFormat].getCanonicalName
     val csv = classOf[CSVFileFormat].getCanonicalName
@@ -540,10 +542,10 @@ object DataSource {
       "org.apache.spark.sql.jdbc.DefaultSource" -> jdbc,
       "org.apache.spark.sql.execution.datasources.jdbc.DefaultSource" -> jdbc,
       "org.apache.spark.sql.execution.datasources.jdbc" -> jdbc,
-      "org.apache.spark.sql.cds" -> cds,
-      "org.apache.spark.sql.cds.DefaultSource" -> cds,
-      "org.apache.spark.sql.execution.datasources.cds.DefaultSource" -> cds,
-      "org.apache.spark.sql.execution.datasources.cds" -> cds,
+      "org.apache.spark.sql.eps" -> eps,
+      "org.apache.spark.sql.eps.DefaultSource" -> eps,
+      "org.apache.spark.sql.execution.datasources.eps.DefaultSource" -> eps,
+      "org.apache.spark.sql.execution.datasources.eps" -> eps,
       "org.apache.spark.sql.json" -> json,
       "org.apache.spark.sql.json.DefaultSource" -> json,
       "org.apache.spark.sql.execution.datasources.json" -> json,
