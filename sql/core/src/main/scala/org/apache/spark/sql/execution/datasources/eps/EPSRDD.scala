@@ -50,16 +50,6 @@ object EPSRDD extends Logging {
     "/@ts=" + tablePart + "; sdb=" + part.tableLocation.dbPart + "@/"
   }
 
-  /**
-    * Takes a (schema, table) specification and returns the table's Catalyst
-    * schema.
-    *
-    * @param options - EPS options that contains url, table and other information.
-    *
-    * @return A StructType giving the table's Catalyst schema.
-    * @throws SQLException if the table specification is garbage.
-    * @throws SQLException if the table contains an unsupported type.
-    */
   def resolveTable(options: JDBCOptions,
                    firstPart: EPSPartition): StructType = {
     val url = options.url
@@ -84,22 +74,11 @@ object EPSRDD extends Logging {
     }
   }
 
-  /**
-    * Prune all but the specified columns from the specified Catalyst schema.
-    *
-    * @param schema - The Catalyst schema of the master table
-    * @param columns - The list of desired columns
-    *
-    * @return A Catalyst schema corresponding to columns in the given order.
-    */
   private def pruneSchema(schema: StructType, columns: Array[String]): StructType = {
     val fieldMap = Map(schema.fields.map(x => x.metadata.getString("name") -> x): _*)
     new StructType(columns.map(name => fieldMap(name)))
   }
 
-  /**
-    * Converts value to SQL expression.
-    */
   private def compileValue(value: Any): Any = value match {
     case stringValue: String => s"'${escapeSql(stringValue)}'"
     case timestampValue: Timestamp => "'" + timestampValue + "'"
@@ -111,10 +90,6 @@ object EPSRDD extends Logging {
   private def escapeSql(value: String): String =
     if (value == null) null else StringUtils.replace(value, "'", "''")
 
-  /**
-    * Turns a single Filter into a String representing a SQL expression.
-    * Returns None for an unhandled filter.
-    */
   def compileFilter(f: Filter, dialect: JdbcDialect): Option[String] = {
     def quote(colName: String): String = dialect.quoteIdentifier(colName)
 
@@ -158,19 +133,6 @@ object EPSRDD extends Logging {
     })
   }
 
-  /**
-    * Build and return EPSRDD from the given information.
-    *
-    * @param sc - Your SparkContext.
-    * @param schema - The Catalyst schema of the underlying database table.
-    * @param requiredColumns - The names of the columns to SELECT.
-    * @param filters - The filters to include in all WHERE clauses.
-    * @param parts - An array of EPSPartitions specifying partition ids and
-    *    per-partition WHERE clauses.
-    * @param options - EPS options that contains url, table and other information.
-    *
-    * @return An RDD representing "SELECT requiredColumns FROM fqTable".
-    */
   def scanTable(
                  sc: SparkContext,
                  schema: StructType,
@@ -204,31 +166,19 @@ private[sql] class EPSRDD(
                              options: JDBCOptions)
   extends RDD[InternalRow](sc, Nil) {
 
-  /**
-    * Retrieve the list of partitions corresponding to this RDD.
-    */
   override def getPartitions: Array[Partition] = partitions
 
-  /**
-    * `columns`, but as a String suitable for injection into a SQL query.
-    */
   private val columnList: String = {
     val sb = new StringBuilder()
     columns.foreach(x => sb.append(",").append(x))
     if (sb.isEmpty) "1" else sb.substring(1)
   }
 
-  /**
-    * `filters`, but as a WHERE clause suitable for injection into a SQL query.
-    */
   private val filterWhereClause: String =
   filters
     .flatMap(EPSRDD.compileFilter(_, JdbcDialects.get(url)))
     .map(p => s"($p)").mkString(" AND ")
 
-  /**
-    * A WHERE clause representing both `filters`, if any, and the current partition.
-    */
   private def getWhereClause(part: EPSPartition): String = {
     if (part.whereClause != null && filterWhereClause.length > 0) {
       "WHERE " + s"($filterWhereClause)" + " AND " + s"(${part.whereClause})"
@@ -241,10 +191,6 @@ private[sql] class EPSRDD(
     }
   }
 
-  /**
-    * Runs the SQL query against the EPS driver.
-    *
-    */
   override def compute(thePart: Partition, context: TaskContext): Iterator[InternalRow] = {
     var closed = false
     var rs: ResultSet = null
