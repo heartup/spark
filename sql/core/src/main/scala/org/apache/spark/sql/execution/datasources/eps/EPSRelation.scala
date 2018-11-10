@@ -59,7 +59,7 @@ private[sql] object EPSRelation extends Logging {
       var i: Int = 0
       var ans = new ArrayBuffer[Partition]()
       for (loc <- partitioning.tableLocations) {
-        ans += CDSPartition(null, loc, i)
+        ans += EPSPartition(null, loc, i)
         i = i + 1
       }
       return ans.toArray
@@ -104,7 +104,7 @@ private[sql] object EPSRelation extends Logging {
         }
       var j: Int = 0
       for (loc <- partitioning.tableLocations) {
-        ans += CDSPartition(whereClause, loc, i * locationSize + j)
+        ans += EPSPartition(whereClause, loc, i * locationSize + j)
         j = j + 1
       }
       i = i + 1
@@ -126,7 +126,7 @@ private[sql] case class EPSRelation(parts: Array[Partition],
   override val schema: StructType = EPSRDD.resolveTable(jdbcOptions,
                                         parts(0).asInstanceOf[EPSPartition])
 
-  // Check if CDSRDD.compileFilter can accept input filters
+  // Check if EPSRDD.compileFilter can accept input filters
   override def unhandledFilters(filters: Array[Filter]): Array[Filter] = {
     filters.filter(EPSRDD.compileFilter(_, JdbcDialects.get(jdbcOptions.url)).isEmpty)
   }

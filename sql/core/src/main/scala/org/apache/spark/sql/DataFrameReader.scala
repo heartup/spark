@@ -242,7 +242,7 @@ class DataFrameReader private[sql](sparkSession: SparkSession) extends Logging {
 
 
   def eps(url: String, table: String, properties: Properties): DataFrame = {
-    cds(url, table, null, 0, 0, 0, properties)
+    eps(url, table, null, 0, 0, 0, properties)
   }
 
   def eps(

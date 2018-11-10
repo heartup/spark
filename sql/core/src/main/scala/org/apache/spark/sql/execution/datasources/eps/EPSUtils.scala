@@ -27,10 +27,10 @@ import org.apache.spark.internal.Logging
 object EPSUtils extends Logging {
   def getTableLocations(url: String, tableName: String): Array[EPSTableLocation] = {
     var tableLocations = new ArrayBuffer[EPSTableLocation]()
-    for (loc <- allLoca) {
-      tableLocations += EPSTableLocation(loc.getTableSuffix,
-        loc.getDbConnGroup.getGroupEntity.getGroupName)
-    }
+//    for (loc <- allLoca) {
+//      tableLocations += EPSTableLocation(loc.getTableSuffix,
+//        loc.getDbConnGroup.getGroupEntity.getGroupName)
+//    }
 
     tableLocations.toArray
   }
