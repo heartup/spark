@@ -17,9 +17,11 @@
 
 package org.apache.spark.sql.execution.datasources.eps
 
-import java.util.{Properties, Set}
+import java.util.Properties
 
 import scala.collection.mutable.ArrayBuffer
+
+import io.shardingsphere.shardingjdbc.api.EPSDriver
 
 import org.apache.spark.internal.Logging
 
@@ -27,8 +29,11 @@ import org.apache.spark.internal.Logging
 object EPSUtils extends Logging {
   def getTableLocations(url: String, tableName: String): Array[EPSTableLocation] = {
     var tableLocations = new ArrayBuffer[EPSTableLocation]()
+    var driver = new EPSDriver()
+    var connetion = driver.connect(url, new Properties())
+    var rules = connetion.getShardingContext().getShardingRule().getTableRules()
 
-//    for (loc <- allLoca) {
+    //    for (loc <- allLoca) {
 //      tableLocations += EPSTableLocation(loc.getTableSuffix,
 //        loc.getDbConnGroup.getGroupEntity.getGroupName)
 //    }
